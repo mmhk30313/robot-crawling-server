@@ -74,9 +74,35 @@ client.connect(err => {
     // perform actions on the collection object
     app.post('/', (req, res) => {
         const allLinks = req.body;
+        // console.log(allLinks);
+        let targetLinks = [...allLinks];
+        let current = null;
+        let myAllLinks = [];
+        targetLinks.sort((a,b) => (a.href > b.href) ? 1 : ((b.href > a.href) ? -1 : 0))
+        // console.log(allLinks);
+        let cnt = 0;
+        for (let i = 0; i < targetLinks.length; i++) {
+            const element = targetLinks[i];
+            if(element.href != current){
+                current = element.href;
+                if(cnt > 0){
+                    const object = {...element, cnt: cnt};
+                    myAllLinks.push(object);
+
+                }else{
+                    const object = {...element, cnt: 1};
+                    myAllLinks.push(object);
+                }
+                cnt = 1;
+            }
+            else{
+                cnt++;
+            }
+        }
+        // console.log(myAllLinks);
         linksCollection.deleteMany({})
         .then( data => {
-            linksCollection.insertMany(allLinks)
+            linksCollection.insertMany(myAllLinks)
             .then( links => {
                 // console.log(links.ops);
                 res.send(links.ops);
